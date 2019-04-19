@@ -1,12 +1,70 @@
 <?php
+    // Get Products
+    function get_all_products_name($pdo, $REQUEST){
 
-    function get_all_products_name($pdo){
+        /// Pagination
+
+        if(!isset($REQUEST['product_per_page'])){
+            $REQUEST['product_per_page'] = 15;
+        }
+
+        if(!isset($REQUEST['page'])){
+            $REQUEST['page'] = 1;
+        }
+
+        $offset = ($REQUEST['product_per_page']*($REQUEST['page']-1));
+        $limit_to = $REQUEST['product_per_page'];
+
+        $limit = " LIMIT $offset,$limit_to";
         
-        $request = $pdo->prepare('SELECT * FROM tbl_products');
+        /// Condition
+
+        $condition = " WHERE true ";
+
+        if(isset($REQUEST['category_ids'])){
+            foreach (explode(',', urldecode($REQUEST['category_ids'])) as $category_id) {
+                $condition .= " AND product_id in (SELECT product_id FROM tbl_products_categories WHERE category_id = ".$category_id.") ";
+            }
+        }
+
+        if(isset($REQUEST['search'])){
+            $condition .= " AND `product_name` LIKE '%";
+            $condition .= urldecode($REQUEST['search']);
+            $condition .= "%' ";
+        }
+
+        // Products fetch
+        
+        $request_count = "SELECT count(*) FROM `tbl_products`".$condition; 
+        $result_count = $pdo->prepare($request_count); 
+        $result_count->execute(); 
+        $number_of_products = $result_count->fetchColumn(); 
+
+        $request = $pdo->prepare("SELECT * FROM tbl_products" .$condition.$limit);
         $request->execute();
-        $products = $request->fetchAll();
-    
-        return $products;
+        $products = [];
+
+        while($product = $request->fetch(PDO::FETCH_ASSOC)){
+            $information_request = $pdo->prepare('SELECT * FROM tbl_products_information WHERE product_id = '.$product['product_id']);
+            $information_request->execute();
+            if($information = $information_request->fetch(PDO::FETCH_ASSOC)){
+                $product['price'] = $information['price'];
+                $request_media = $pdo->prepare('SELECT * FROM tbl_products_media WHERE product_id = '.$product['product_id']);
+                $request_media->execute();
+                if($media = $request_media->fetch(PDO::FETCH_ASSOC)){
+                    $product['image'] = $media['media_src'];
+                    $products[] = $product;
+                }
+            }
+        }
+        return array(
+            "condition" => $condition,
+            "page" => $REQUEST['page'],
+            "total_page" => ceil($number_of_products/$REQUEST['product_per_page']),
+            "product_per_page" => $REQUEST['product_per_page'],
+            "number_of_products" => $number_of_products,
+            "products" => $products,
+        );
     }
 
     function post_products_name($pdo, $REQUEST){
