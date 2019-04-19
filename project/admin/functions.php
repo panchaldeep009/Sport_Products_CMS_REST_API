@@ -1,6 +1,6 @@
 <?php
 
-    // In use  functions
+    // In use functions
 
     function checkLogin(){
         if(isset($_SESSION['user']['user_id'])){
@@ -9,9 +9,18 @@
             return false;
         }
     }
-
-    // Database functions
-
+    function check_exist($perm, $value, $pdo){
+        $check_user_exist = $pdo->prepare("SELECT COUNT(*) FROM `tbl_users` WHERE `".$perm."` = :value"); 
+        $check_user_exist->bindParam(':value', $value, PDO::PARAM_STR);
+        $check_user_exist->execute();
+        if($check_user_exist->fetchColumn() > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    // Login User
     function login($username, $password, $pdo){
         try {
             $check_user_exist = $pdo->prepare("SELECT COUNT(*) FROM `tbl_users` WHERE `user_username` = :username"); 
@@ -25,27 +34,33 @@
                 if($failed_attempts >= 3){
                     return array('error' => 'Account has been blocked !');
                 } else {
-                    $check_login_user = $pdo->prepare("SELECT `user_id`, `user_name`, `user_username`, `user_email`, `user_password`, `user_last_login`, `user_last_login`, `user_created_at` FROM `tbl_users` WHERE `user_username` = :username");
+                    // Verify Password
+                    $check_login_user = $pdo->prepare("SELECT `user_password`, `user_last_login`, `user_created_at` FROM `tbl_users` WHERE `user_username` = :username");
                     $check_login_user->bindParam(':username', $username, PDO::PARAM_STR);
                     $check_login_user->execute();
-                    while($login_user = $check_login_user->fetch(PDO::FETCH_ASSOC)){
-                        $_SESSION['user'] = $login_user;
-                    }
-                    if(!empty($_SESSION['user']) && password_verify($password, $_SESSION['user']['user_password'])){
-                        date_default_timezone_set('America/Toronto');
-                        unset($_SESSION['user']['user_password']);
+                    $this_login_user = $check_login_user->fetch(PDO::FETCH_ASSOC);
 
-                        if((time() - $_SESSION['user']['user_created_at']) > 3 * 24 * 60 * 60 && $_SESSION['user']['user_last_login'] == null){
-                            unset($_SESSION);
+                    if(isset($this_login_user) && password_verify($password, $this_login_user['user_password'])){
+                        date_default_timezone_set('America/Toronto');
+
+                        if((time() - $this_login_user['user_created_at']) > 3 * 24 * 60 * 60 && $this_login_user['user_last_login'] == null){
                             return array('error' => 'Account Suspended');
                         }
 
+                        $login_user = $pdo->prepare("SELECT `user_id`, `user_name`, `user_username`, `user_email`, `user_last_login`, `user_last_login`, `user_created_at` FROM `tbl_users` WHERE `user_username` = :username");
+                        $login_user->bindParam(':username', $username, PDO::PARAM_STR);
+                        $login_user->execute();
+                        
+                        if($login_user = $login_user->fetch(PDO::FETCH_ASSOC)){
+                            $_SESSION['user'] = $login_user;
+                        }
 
                         $update_failed_attempts = $pdo->prepare('UPDATE `tbl_users` SET `user_login_attempts` = 0, `user_last_login` = '.time().' WHERE `user_id` = :userId');
                         $update_failed_attempts->bindParam(':userId', $_SESSION['user']['user_id'], PDO::PARAM_INT); 
                         
                         $update_failed_attempts->execute();
                         return array('success' => 'Account has been logged in');
+
                     } else {
                         unset($_SESSION);
                         session_destroy();
@@ -62,16 +77,7 @@
             return array('error' => $error);
         }
     }
-    function check_exist($perm, $value, $pdo){
-        $check_user_exist = $pdo->prepare("SELECT COUNT(*) FROM `tbl_users` WHERE `".$perm."` = :value"); 
-        $check_user_exist->bindParam(':value', $value, PDO::PARAM_STR);
-        $check_user_exist->execute();
-        if($check_user_exist->fetchColumn() > 0){
-            return true;
-        } else {
-            return false;
-        }
-    }
+    // Create User
     function create_user($username, $password, $name, $email, $pdo){
         try {
             if(
@@ -105,6 +111,7 @@
         }
         return array('error' => $username);
     }
+    // Edit User
     function edit_user($username, $email, $name, $password, $pdo){
         if( empty(trim($username)) &&
             empty(trim($name)) &&
@@ -154,8 +161,10 @@
         }
 
     }
+    // Logout User
     function logout(){
         session_destroy();
+        return array('success' => 'Account Logout Successfully');
     }
 
 ?>

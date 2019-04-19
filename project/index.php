@@ -4,12 +4,15 @@
     require_once('includes/products.php');
     require_once('includes/categories.php');
     require_once('admin/functions.php');
-
+    
+    // Admin Requests
+    
+    // Content Requests
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if(isset($_GET['catagories'])){
             $response = get_categories($pdo);
         } else {
-            $response = get_all_products_name($pdo);
+            $response = get_all_products_name($pdo, $_GET);
         }
     } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if(isset($_POST['product_id'])){
