@@ -24,7 +24,7 @@
 
         <v-list-tile
           v-for="category in $parent.all_catagories.slice(0)
-            .filter(({category_name}) => category_name == 'Men' || category_name == 'Women')"
+            .filter(({category_name}) => category_name == 'Men' || category_name == 'Women' || category_name == 'Boys' || category_name == 'Girls')"
           :key="category.category_id"
         >
           <v-list-tile-content>
@@ -49,7 +49,7 @@
 
         <v-list-tile
           v-for="category in $parent.all_catagories.slice(0)
-            .filter(({category_name}) => category_name !== 'Men' && category_name !== 'Women')"
+            .filter(({category_name}) => category_name !== 'Men' && category_name !== 'Women' && category_name != 'Boys' && category_name != 'Girls')"
           :key="category.category_id"
         >
           <v-list-tile-content>

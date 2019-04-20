@@ -6,19 +6,21 @@
       <v-toolbar-title class="white--text">Sport Check</v-toolbar-title>
 
       <v-spacer></v-spacer>
-      <v-flex xs12 sm6 md3>
+      <v-flex v-if="!thisProduct">
         <v-text-field label="Solo" solo light v-model="search_text" placeholder="Search"></v-text-field>
       </v-flex>
-      <v-btn icon @click="drawer = !drawer">
+      <v-btn icon @click="drawer = !drawer" v-if="!thisProduct">
         <v-icon>search</v-icon>
       </v-btn>
     </v-toolbar>
-    <Products/>
+    <Products v-if="!thisProduct"/>
+    <Product v-if="thisProduct"/>
   </div>
 </template>
 
 <script>
 import Products from './components/Products';
+import Product from './components/Product';
 import axios from 'axios';
 
 export default {
@@ -67,6 +69,7 @@ export default {
     },
     components: {
         Products,
+        Product,
     },
     mounted() {
         this.fetchProducts();
