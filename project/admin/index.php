@@ -1,8 +1,9 @@
 <?php
-
+header('Access-Control-Allow-Origin', 'http://localhost:8080');
 require_once('../connect.php');
 require_once('functions.php');
-header('Access-Control-Allow-Origin: *');
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (checkLogin()) {
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['login'])) {
         if (checkLogin()) {
-            $response = array('success' => 'A user already logged in');
+            $response = array('success' => 'A user already logged in', 'user' => $_SESSION['user']);
         } else {
             if (isset($_POST['username'], $_POST['password'])) {
                 $response = login($_POST['username'], $_POST['password'], $pdo);
@@ -34,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else if (isset($_POST['log_out'])) {
         $response = logout();
     } else {
-        $response = array('error' => "Invalid Request");
+        $response = array('error' => "Invalid Request", "request" => $_POST);
     }
 } else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $putF = fopen('php://input', 'r');

@@ -326,7 +326,7 @@ function edit_product_category($pdo, $REQUEST)
         return array('error' => "Unable to edit product category");
     }
 }
-
+/// FROM POST
 function edit_product_media($pdo, $REQUEST, $FILES)
 {
     $select_product_media_query = "SELECT * FROM `tbl_products_media` WHERE `media_id` = :media_id";
@@ -422,6 +422,13 @@ function delete_product_media($pdo, $REQUEST)
     $product_media->execute();
     $number_of_media = $product_media->fetchColumn();
 
+    $select_product_media_query = "SELECT * FROM `tbl_products_media` WHERE `media_id` = :media_id";
+    $select_product_media = $pdo->prepare($select_product_media_query);
+    $select_product_media->bindParam(':media_id', $REQUEST['media_id']);
+    $select_product_media->execute();
+
+    $this_media = $select_product_media->fetch(PDO::FETCH_ASSOC);
+
     if ($number_of_media > 1) {
 
         $delete_product_media_query = "DELETE FROM `tbl_products_media` WHERE `media_id` = :media_id;";
@@ -430,6 +437,7 @@ function delete_product_media($pdo, $REQUEST)
         $delete_product_media->execute();
 
         if ($delete_product_media->rowCount() > 0) {
+            unlink($this_media['media_src']);
             return array('success' => "Product media deleted successfully");
         } else {
             return array('error' => "Unable to deleted product media");

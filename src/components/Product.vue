@@ -1,19 +1,5 @@
 <template>
   <v-layout row style="height : calc(100vh - 66px)">
-    <v-card v-if="$parent.drawer" min-width="280">
-      <v-list class="pa-0" style="overflow-y: auto; max-height: calc(100vh - 66px)">
-        <v-list-tile @click="$parent.thisProduct = false">
-          <v-list-tile-action>
-            <v-icon>home</v-icon>
-          </v-list-tile-action>
-
-          <v-list-tile-content>
-            <v-list-tile-title>Home</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-divider></v-divider>
-      </v-list>
-    </v-card>
     <v-layout row wrap align-center justify-center v-if="product" style="overflow-y: auto">
       <v-flex xs12 md6 lg4 style="padding: 2em">
         <p class="title">{{categories.join(' / ')}}</p>

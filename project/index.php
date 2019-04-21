@@ -24,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $response = create_category($pdo, $_POST);
         } else if (isset($_POST['category_id'], $_POST['product_id'])) {
             $response = create_product_category($pdo, $_POST);
+        } else if (isset($_POST['media_id'])) {
+            $response = edit_product_media($pdo, $_POST, $_FILES);
         } else if (isset($_POST['product_id'], $_FILES['photo'])) {
             $response = create_product_media($pdo, $_POST, $_FILES);
         } else {
@@ -49,8 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $response = edit_product_info($pdo, $_PUT);
         } else if (isset($_PUT['products_category_id'])) {
             $response = edit_product_category($pdo, $_PUT);
-        } else if (isset($_PUT['media_id'])) {
-            $response = edit_product_media($pdo, $_PUT, $_FILES);
         } else {
             $response = array('error' => 'Bad Request');
         }
@@ -68,14 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if (checkLogin()) {
 
-        if (isset($_PUT['product_id'])) {
+        if (isset($_DELETE['product_id'])) {
             $response = delete_product($pdo, $_DELETE);
-        } else if (isset($_PUT['products_category_id'])) {
+        } else if (isset($_DELETE['products_category_id'])) {
             $response = delete_product_category($pdo, $_DELETE);
-        } else if (isset($_PUT['media_id'])) {
+        } else if (isset($_DELETE['media_id'])) {
             $response = delete_product_media($pdo, $_DELETE);
         } else {
-            $response = array('error' => 'Bad Request');
+            $response = array('error' => 'Bad Request', "DELETE" => $_DELETE);
         }
     } else {
         $response = array('error' => 'User must be logged in');

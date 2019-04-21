@@ -1,7 +1,10 @@
 <template>
   <div>
     <v-toolbar dark color="blue">
-      <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon>
+      <v-btn icon @click="thisProduct = false" v-if="thisProduct">
+        <v-icon>home</v-icon>
+      </v-btn>
+      <v-toolbar-side-icon @click="drawer = !drawer" v-if="!thisProduct"></v-toolbar-side-icon>
 
       <v-toolbar-title class="white--text">Sport Check</v-toolbar-title>
 
